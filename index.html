@@ -256,7 +256,7 @@ function renderTop(){
   const a=st.me&&st.accounts[st.me];
   $('#me').innerHTML=a?`${avatar(a,st.me)}<span class="b">${esc(a.nick)}</span>`:'';$('#me').classList.toggle('hide',!a);
   $('#bP1').textContent=a?a.nick:'GUEST';
-  const r=ranking('jump')[0];$('#bHi').textContent=r?`${r.s}점 · ${r.id}`:'아직 기록 없음';
+  const r=ranking('jump')[0];$('#bHi').textContent=r?`${r.s}점 · ${r.a.nick||r.id}`:'아직 기록 없음';
   $('#status').textContent=STATUS[st.mode]+(st.mode==='shared'?` · ${Object.keys(st.accounts).length}명`:'');
 }
 renderShelf.n=0;
@@ -271,7 +271,7 @@ function renderPane(){
   const p=$('#pane');
   if(st.tab==='rank'){const list=ranking(st.rankGame);
     p.innerHTML=`<div class="gtabs">${GAMES.map(g=>`<button class="px" data-rg="${g.id}" aria-pressed="${g.id===st.rankGame}">${esc(g.name)}</button>`).join('')}</div>`+
-    (list.length?`<ol class="list">${list.slice(0,50).map((x,i)=>`<li class="${x.id===st.me?'mine':''}"><span class="n">${i+1}</span>${avatar(x.a,x.id,'av sm')}<span>${esc(x.id)}</span><span class="s">${x.s}</span></li>`).join('')}</ol>`
+    (list.length?`<ol class="list">${list.slice(0,50).map((x,i)=>`<li class="${x.id===st.me?'mine':''}"><span class="n">${i+1}</span>${avatar(x.a,x.id,'av sm')}<span>${esc(x.a.nick||x.id)}</span><span class="s">${x.s}</span></li>`).join('')}</ol>`
       :`<p class="empty">아직 기록이 없어요.<br>첫 번째 1등이 되어 보세요!</p>`);return}
   const a=st.me&&st.accounts[st.me];
   if(st.me&&a){
