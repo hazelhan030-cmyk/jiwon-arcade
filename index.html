@@ -114,6 +114,26 @@ body.open #scrim{opacity:1;pointer-events:auto}body.open #drawer{transform:none;
 .empty{color:var(--soft);text-align:center;padding:26px 0}
 .tiny{font-size:12px;color:var(--soft);margin-top:14px}
 .hide{display:none!important}
+/* 캐릭터(아바타): 16×16 픽셀 그림을 2배·6배로 또렷하게 */
+.av.ch{width:32px;height:32px;padding:0;background:#0d1226;image-rendering:pixelated;object-fit:contain}
+.list .sm.ch{width:32px;height:32px}
+.pf .big.ch{width:96px;height:96px}
+.t5 .xs.ch{width:32px;height:32px}
+.pfava{display:block;padding:0}
+.dprev{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:14px}
+.dprev img{width:128px;height:128px;image-rendering:pixelated;background:#0d1226;--c:var(--pink);--gl:#ff7ad933;margin:8px}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px;margin:4px 4px 18px}
+.dcell{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px 8px;background:var(--p2);--c:var(--line);font-size:13px;text-align:center}
+.dcell img{width:48px;height:48px;image-rendering:pixelated;background:#0d1226}
+.dcell[aria-pressed=true]{--c:var(--mint);--gl:#5ef2c840;color:var(--mint)}
+.dcell.locked{cursor:default;color:var(--soft)}
+.dcell .hint{font-size:11px;line-height:1.35;color:var(--soft)}
+.dcell .off{width:48px;height:48px;display:grid;place-items:center;background:#0d1226;color:var(--soft);font-size:20px}
+#upop{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:#0b0b1ad9}
+#upop h3{font-size:24px;color:var(--mint);text-shadow:3px 3px 0 #0d4a3c}
+#upop img{width:128px;height:128px;image-rendering:pixelated;background:#0d1226;--c:var(--pink);--gl:#ff7ad940;margin:18px auto 8px;display:block}
+#upop .um{color:var(--ink);font-size:16px;font-weight:700;margin:10px 0 4px}
+#upop .us{margin:0 0 16px}
 /* 게임 */
 #game{position:fixed;inset:0;z-index:10;background:#06060f;display:flex;flex-direction:column}
 .gbar{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:4px solid var(--line);background:var(--bg)}
@@ -335,6 +355,7 @@ body.open #scrim{opacity:1;pointer-events:auto}body.open #drawer{transform:none;
   <div class="dhead">
     <div class="tabs" role="tablist">
       <button class="tab px" role="tab" data-tab="profile">프로필</button>
+      <button class="tab px" role="tab" data-tab="deco">꾸미기</button>
       <button class="tab px" role="tab" data-tab="rank">랭킹</button>
     </div>
     <button class="ibtn px" id="closeBtn" aria-label="닫기"><svg viewBox="0 0 8 8" shape-rendering="crispEdges"><path d="M1 1h1v1h1v1h2V2h1V1h1v1H6v1H5v2h1v1h1v1H6V6H5V5H3v1H2v1H1V6h1V5h1V3H2V2H1z"/></svg></button>
@@ -428,6 +449,15 @@ body.open #scrim{opacity:1;pointer-events:auto}body.open #drawer{transform:none;
   </div>
 </section>
 
+<div id="upop" class="hide" role="dialog" aria-modal="true" aria-labelledby="upT"><div class="panel px">
+  <h3 id="upT">MISSION CLEAR!</h3>
+  <img id="upImg" class="px" alt="">
+  <p class="um" id="upMsg"></p>
+  <p class="us" id="upSub"></p>
+  <div class="row" style="justify-content:center"><button class="btn px" id="upOk">확인</button><button class="btn ghost px" id="upGo">꾸미러 가기</button></div>
+</div></div>
+
+<script src="missions.js"></script>
 <script>
 {
 const $=s=>document.querySelector(s);
@@ -501,7 +531,60 @@ const errText=e=>({exists:'이미 있는 아이디예요.',badlogin:'아이디 �
 
 /* ===== 화면 ===== */
 const best=(id,g)=>((st.accounts[id]||{}).best||{})[g]||0;
-const avatar=(a,id,cls='av')=>a&&a.photo?`<img class="${cls}" src="${esc(a.photo)}" alt="">`:`<span class="${cls}">${esc(((a&&a.nick)||id||'?').slice(0,1))}</span>`;
+/* ===== 캐릭터(아바타) =====
+   캐릭터와 아이템은 모두 16×16 픽셀 그림. 두 캐릭터는 눈 높이·머리 꼭대기가 같아서 아이템이 공용으로 맞음.
+   저장: accounts/{아이디}.ava = {c:캐릭터, hat, face, hand, body}, .unlocks = [받은 것들] (점수 best와 따로라 랭킹에 영향 없음)
+   미션(해금 조건) 목록은 missions.js 파일에 있음 */
+const AVA={
+ mandu:{name:'만두',pal:{o:'#4a3a2a',b:'#f3ead8',s:'#d3c2a0',h:'#ffffff'},
+  map:["................","................",".......oo.......","......ohho......","....oobhhboo....","...obbsbbsbbo...","..obbbbbbbbbbo..",".obbwebbbbwebbo.",".obbeebbbbeebbo.",".obppbmbbmbppbo.",".obbbbbmmbbbbbo.",".obbbbbbbbbbbbo.",".osbbbbbbbbbbso.","..osssssssssso..","...oooooooooo...","................"]},
+ potato:{name:'감자',pal:{o:'#3a2416',b:'#c8955a',s:'#9a6a3a',h:'#e6bb84',d:'#7e5230'},
+  map:["................","................",".....oooooo.....","...oobbbbbboo...","..obhhbbbbbbbo..","..obhbbbbbdbbso.",".obbbbbbbbbbbso.",".obbwebbbbwebso.",".obbeebbbbeebso.",".obppbmbbmbppso.",".obbbbbmmbbbbso.",".obbdbbbbbbbbso.","..obbbbbbbbbso..","..osbbbbbbbsso..","...oossssssoo...","................"]}};
+const FACEPAL={e:'#1a1a2e',w:'#ffffff',p:'#ff8fb0',m:'#6a2a3a'};
+const CHAR_ORDER=['mandu','potato'],DEFAULT_CHAR='mandu';
+const SLOTS=[['hat','모자'],['face','얼굴'],['hand','손'],['body','옷']];
+// 꾸미기 아이템: id:{name, slot:'hat'|'face'|'hand'|'body', map:[16줄], pal:{글자:색}} — 미션 목록이 정해지면 그림을 여기에 추가
+const ITEMS={};
+const MISSIONS=(Array.isArray(window.ARCADE_MISSIONS)?window.ARCADE_MISSIONS:[]).filter(m=>m&&m.reward&&(AVA[m.reward]||ITEMS[m.reward]));
+const owned=a=>new Set([DEFAULT_CHAR,...((a&&a.unlocks)||[])]);
+function avaOf(a){const v=(a&&a.ava)||{},o=owned(a),r={c:AVA[v.c]&&o.has(v.c)?v.c:DEFAULT_CHAR};
+  SLOTS.forEach(([k])=>{const it=ITEMS[v[k]];r[k]=it&&it.slot===k&&o.has(v[k])?v[k]:''});return r}
+function paintMap(c,map,pal,one){map.forEach((row,y)=>{if(!row)return;for(let x=0;x<row.length;x++){const col=pal[row[x]];if(col){c.fillStyle=one||col;c.fillRect(x,y,1,1)}}})}
+const AVC={};
+function avaURL(v,sil){const key=(sil?'#':'')+[v.c,...SLOTS.map(([k])=>v[k]||'')].join('|');if(AVC[key])return AVC[key];
+  const cv=document.createElement('canvas');cv.width=cv.height=16;const c=cv.getContext('2d'),ch=AVA[v.c]||AVA[DEFAULT_CHAR];
+  paintMap(c,ch.map,{...ch.pal,...FACEPAL},sil&&'#2e2b5c');
+  ['body','face','hat','hand'].forEach(k=>{const it=ITEMS[v[k]];if(it)paintMap(c,it.map,it.pal,sil&&'#3b3770')});
+  return AVC[key]=cv.toDataURL()}
+const avatar=(a,id,cls='av')=>`<img class="${cls} ch" src="${avaURL(avaOf(a))}" alt="">`;
+const josa=w=>{const k=(w||'').charCodeAt(w.length-1)-0xAC00;return k>=0&&k<11172&&k%28?'을':'를'};
+const rewardName=r=>(AVA[r]||ITEMS[r]||{}).name||r;
+const missionFor=r=>MISSIONS.find(m=>m.reward===r);
+function rewardPreview(r,a,sil){const v=avaOf(a);if(AVA[r])v.c=r;else if(ITEMS[r])v[ITEMS[r].slot]=r;return avaURL(v,sil)}
+// 미션 확인: kind='enter'(게임에 들어감) 또는 'over'(게임이 끝남, sc=그 판 점수)
+let pendUnlocks=[],claimingU=false;
+function missionHit(m,kind,sc){if(m.type==='enter')return kind==='enter';if(kind!=='over')return false;
+  const v=+m.value;if(m.type==='score')return sc>=v;if(m.type==='exact')return sc===v;return false}
+function checkMissions(kind,g,sc){
+  const a=st.me&&st.accounts[st.me],have=owned(a);pendUnlocks.forEach(r=>have.add(r));
+  const rs=[...new Set(MISSIONS.filter(m=>(m.game===g||m.game==='any')&&missionHit(m,kind,sc)).map(m=>m.reward))].filter(r=>!have.has(r));
+  if(!rs.length)return;
+  if(a&&S)S.update(st.me,{unlocks:[...(a.unlocks||[]),...rs]}).catch(()=>{pendUnlocks.push(...rs)});else pendUnlocks.push(...rs);
+  rs.forEach(r=>upQ.push({r,guest:!a}));if($('#upop').classList.contains('hide'))nextUnlock()}
+// 로그인 전에 깬 미션은 로그인하면 그 프로필에 넣어 줌
+async function claimUnlocks(){if(claimingU||!pendUnlocks.length||!st.me||!st.accounts[st.me]||!S)return;claimingU=true;
+  const a=st.accounts[st.me],have=owned(a),add=[...new Set(pendUnlocks)].filter(r=>!have.has(r));pendUnlocks=[];
+  if(add.length)try{await S.update(st.me,{unlocks:[...(a.unlocks||[]),...add]})}catch(e){}claimingU=false}
+// 해금 팝업
+const upQ=[];
+function nextUnlock(){const it=upQ.shift(),pop=$('#upop');if(!it){pop.classList.add('hide');return}
+  const n=rewardName(it.r);$('#upImg').src=rewardPreview(it.r,st.me&&st.accounts[st.me]);
+  $('#upMsg').textContent=`아이템이 해금되어 ${n}${josa(n)} 받았다!`;
+  $('#upSub').textContent=it.guest?'로그인하면 내 프로필에 저장돼요.':AVA[it.r]?'꾸미기에서 캐릭터를 바꿀 수 있어요.':'꾸미기에서 입혀 볼 수 있어요.';
+  $('#upGo').classList.toggle('hide',it.guest);pop.classList.remove('hide');$('#upOk').focus()}
+$('#upOk').onclick=nextUnlock;
+$('#upGo').onclick=()=>{upQ.length=0;$('#upop').classList.add('hide');G.pend=null;closeGame();openDrawer('deco')};
+async function saveAva(p){const a=st.accounts[st.me];if(!a)return;try{await S.update(st.me,{ava:{...avaOf(a),...p}})}catch(er){const e=$('#perr');if(e)e.textContent=errText(er)}}
 const ranking=g=>Object.entries(st.accounts).map(([id,a])=>({id,a,s:(a.best||{})[g]||0})).filter(x=>x.s>0).sort((x,y)=>y.s-x.s||x.id.localeCompare(y.id));
 const STATUS={loading:'불러오는 중…',slow:'서버 연결 대기 중',shared:'ONLINE',local:'이 기기에만 저장',error:'불러오기 실패'};
 function renderTop(){
@@ -526,9 +609,23 @@ function renderPane(){
     (list.length?`<ol class="list">${list.slice(0,50).map((x,i)=>`<li class="${x.id===st.me?'mine':''}"><span class="n">${i+1}</span>${avatar(x.a,x.id,'av sm')}<span>${esc(x.a.nick||x.id)}</span><span class="s">${x.s}</span></li>`).join('')}</ol>`
       :`<p class="empty">아직 기록이 없어요.<br>첫 번째 1등이 되어 보세요!</p>`);return}
   const a=st.me&&st.accounts[st.me];
+  if(st.tab==='deco'){
+    if(!(st.me&&a)){p.innerHTML=`<div class="dprev"><img class="px" src="${avaURL({c:DEFAULT_CHAR})}" alt="만두"></div><p class="empty">로그인하면 캐릭터를 꾸밀 수 있어요.<br>미션을 깨면 아이템이 생겨요!</p>
+      <button class="btn px" data-go="profile" style="width:calc(100% - 8px)">로그인하러 가기</button>`;return}
+    const v=avaOf(a),o=owned(a),slot=st.slot||'hat';
+    const lockCell=r=>{const m=missionFor(r);return`<div class="dcell locked px"><img src="${rewardPreview(r,a,true)}" alt=""><span>???</span>${m&&m.text?`<span class="hint">${esc(m.text)}</span>`:''}</div>`};
+    const chars=CHAR_ORDER.map(k=>o.has(k)?`<button class="dcell px" data-ch="${k}" aria-pressed="${v.c===k}"><img src="${rewardPreview(k,a)}" alt=""><span>${esc(AVA[k].name)}</span></button>`:lockCell(k)).join('');
+    const its=Object.keys(ITEMS).filter(k=>ITEMS[k].slot===slot),mine=its.filter(k=>o.has(k));
+    const items=(mine.length?`<button class="dcell px" data-it="" aria-pressed="${!v[slot]}"><span class="off">✕</span><span>벗기</span></button>`:'')+
+      its.map(k=>o.has(k)?`<button class="dcell px" data-it="${k}" aria-pressed="${v[slot]===k}"><img src="${rewardPreview(k,a)}" alt=""><span>${esc(ITEMS[k].name)}</span></button>`:lockCell(k)).join('');
+    p.innerHTML=`<div class="dprev"><img class="px" src="${avaURL(v)}" alt="내 캐릭터"><span class="b">${esc(a.nick)}</span></div>
+      <p class="sec">캐릭터</p><div class="dgrid">${chars}</div>
+      <div class="gtabs">${SLOTS.map(([k,n])=>`<button class="px" data-slot="${k}" aria-pressed="${k===slot}">${n}</button>`).join('')}</div>
+      ${items?`<div class="dgrid">${items}</div>`:`<p class="empty">아직 받은 아이템이 없어요.<br>미션을 깨면 여기에 생겨요!</p>`}
+      <div class="err" id="perr" role="status"></div>`;return}
   if(st.me&&a){
-    p.innerHTML=`<div class="pf"><label style="cursor:pointer" title="사진 바꾸기">${avatar(a,st.me,'av big px')}<input type="file" accept="image/*" id="chPhoto" hidden></label>
-      <h3>${esc(a.nick)}</h3><span class="id">@${esc(st.me)} · 사진을 누르면 바꿀 수 있어요</span></div>
+    p.innerHTML=`<div class="pf"><button class="pfava" data-go="deco" title="캐릭터 꾸미기">${avatar(a,st.me,'av big px')}</button>
+      <h3>${esc(a.nick)}</h3><span class="id">@${esc(st.me)} · 캐릭터를 누르면 꾸밀 수 있어요</span></div>
       <p class="sec">게임별 최고 점수</p>
       <ul class="list">${GAMES.map(g=>{const r=ranking(g.id).findIndex(x=>x.id===st.me);return`<li><span>${esc(g.name)}</span><span style="color:var(--soft);font-size:13px">${r>=0?(r+1)+'위':''}</span><span class="s">${best(st.me,g.id)}점</span></li>`}).join('')}</ul>
       <div class="field" style="margin-top:20px"><label for="nk">닉네임 바꾸기</label><div class="row"><input class="px" id="nk" value="${esc(a.nick)}" maxlength="12" style="flex:1"><button class="btn alt px" id="saveNick">저장</button></div></div>
@@ -539,32 +636,30 @@ function renderPane(){
   <form id="authForm" autocomplete="off">
    <div class="field"><label for="fid">아이디 (영문 소문자·숫자 3~12자)</label><input class="px" id="fid" maxlength="12" autocapitalize="off" spellcheck="false" required></div>
    <div class="field"><label for="fpw">비밀번호 (6자 이상)</label><input class="px" id="fpw" type="password" required></div>
-   ${su?`<div class="field"><label for="fnk">닉네임</label><input class="px" id="fnk" maxlength="12" required></div>
-   <div class="field"><label for="fph">프로필 사진 (선택)</label><input id="fph" type="file" accept="image/*"></div>`:''}
+   ${su?`<div class="field"><label for="fnk">닉네임</label><input class="px" id="fnk" maxlength="12" required></div>`:''}
    <div class="err" id="aerr" role="status"></div><button class="btn px" style="width:calc(100% - 8px)" id="aBtn">${su?'프로필 만들기':'로그인'}</button>
   </form><p class="tiny">비밀번호는 다른 사이트에서 쓰는 것과 다르게 정해 주세요.</p>`;
 }
 function renderOverRank(){const ol=$('#ovRank');if(!ol)return;const top=ranking(G.game).slice(0,5);
-  ol.innerHTML=top.length?top.map((x,i)=>`<li class="${x.id===st.me?'mine':''}"><span class="n">${i+1}</span><span class="nm">${esc(x.a.nick||x.id)}</span><span class="s">${x.s}점</span></li>`).join(''):'<li class="none">아직 기록이 없어요</li>'}
-function renderAll(){if(!$('#ov').classList.contains('hide')){renderOverRank();if(G.pend&&st.me)claimPending()}renderTop();renderShelf();renderPane();if(!$('#game').classList.contains('hide'))$('#gBest').textContent=st.me?'최고 '+best(st.me,G.game)+'점':'GUEST'}
-function shrink(file){return new Promise((res,rej)=>{const img=new Image(),u=URL.createObjectURL(file);
-  img.onload=()=>{const c=document.createElement('canvas');c.width=c.height=64;const k=Math.min(img.width,img.height),x=c.getContext('2d');x.imageSmoothingEnabled=true;
-    x.drawImage(img,(img.width-k)/2,(img.height-k)/2,k,k,0,0,64,64);URL.revokeObjectURL(u);res(c.toDataURL('image/png'))};img.onerror=()=>rej();img.src=u})}
+  ol.innerHTML=top.length?top.map((x,i)=>`<li class="${x.id===st.me?'mine':''}"><span class="n">${i+1}</span>${avatar(x.a,x.id,'av xs')}<span class="nm">${esc(x.a.nick||x.id)}</span><span class="s">${x.s}점</span></li>`).join(''):'<li class="none">아직 기록이 없어요</li>'}
+function renderAll(){if(pendUnlocks.length)claimUnlocks();if(!$('#ov').classList.contains('hide')){renderOverRank();if(G.pend&&st.me)claimPending()}renderTop();renderShelf();renderPane();if(!$('#game').classList.contains('hide'))$('#gBest').textContent=st.me?'최고 '+best(st.me,G.game)+'점':'GUEST'}
 
 /* ===== 이벤트 ===== */
 const openDrawer=t=>{if(t)st.tab=t;renderPane();document.body.classList.add('open')};
 $('#menuBtn').onclick=()=>openDrawer();$('#me').onclick=()=>openDrawer('profile');
 $('#closeBtn').onclick=$('#scrim').onclick=()=>document.body.classList.remove('open');
-addEventListener('keydown',e=>{if(e.key==='Escape')document.body.classList.remove('open')});
+addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('#upop').classList.contains('hide'))nextUnlock();else document.body.classList.remove('open')}});
 document.querySelector('.dhead').addEventListener('click',e=>{const t=e.target.closest('[data-tab]');if(t){st.tab=t.dataset.tab;renderPane()}});
 $('#shelf').addEventListener('click',e=>{const c=e.target.closest('[data-game]');if(c)openGame(c.dataset.game)});
 $('#pane').addEventListener('click',async e=>{const t=e.target.closest('button');if(!t)return;
   if(t.dataset.auth){st.auth=t.dataset.auth;renderPane();return}
   if(t.dataset.rg){st.rankGame=t.dataset.rg;renderPane();return}
+  if(t.dataset.go){st.tab=t.dataset.go;renderPane();return}
+  if(t.dataset.slot){st.slot=t.dataset.slot;renderPane();return}
+  if(t.dataset.ch){await saveAva({c:t.dataset.ch});return}
+  if(t.dataset.it!==undefined){await saveAva({[st.slot||'hat']:t.dataset.it});return}
   if(t.id==='logout'){S&&S.logout();return}
   if(t.id==='saveNick'){const v=$('#nk').value.trim();if(!v)return;t.disabled=true;try{await S.update(st.me,{nick:v})}catch(er){$('#perr').textContent=errText(er)}t.disabled=false}});
-$('#pane').addEventListener('change',async e=>{if(e.target.id!=='chPhoto'||!e.target.files[0])return;
-  try{await S.update(st.me,{photo:await shrink(e.target.files[0])})}catch(er){const p=$('#perr');if(p)p.textContent=er?errText(er):'사진을 읽지 못했어요.'}});
 function authCheck(mode,id,pw){if(!/^[a-z0-9_]{3,12}$/.test(id))return'아이디는 영문 소문자·숫자·_ 3~12자로 해 주세요.';
   if(mode==='signup'&&pw.length<6)return'비밀번호는 6자 이상이에요.';if(!pw)return'비밀번호를 적어 주세요.';if(!S)return'불러오는 중이에요. 잠시만요!';return''}
 $('#pane').addEventListener('submit',async e=>{e.preventDefault();
@@ -574,8 +669,7 @@ $('#pane').addEventListener('submit',async e=>{e.preventDefault();
   if(!S){err.textContent='불러오는 중이에요. 잠시만요!';return}
   btn.disabled=true;err.textContent='';
   try{if(st.auth==='signup'){const nick=$('#fnk').value.trim();if(!nick)fail('nonick');
-      const f=$('#fph').files[0];let photo='';if(f){try{photo=await shrink(f)}catch(x){}}
-      await S.signup(id,pw,{nick,photo,best:{},created:Date.now()})}
+      await S.signup(id,pw,{nick,best:{},ava:{c:DEFAULT_CHAR},unlocks:[],created:Date.now()})}
     else await S.login(id,pw)}
   catch(er){err.textContent=er.code==='nonick'?'닉네임을 적어 주세요.':errText(er);btn.disabled=false}});
 
@@ -604,8 +698,8 @@ const EXT={tako:()=>window.Tako,mon:()=>window.Mon};
 const extClose=except=>Object.keys(EXT).forEach(k=>{if(k!==except&&EXT[k]())EXT[k]().close()});
 function openGame(g){G.game=g;$('#gTitle').textContent=GAMES.find(x=>x.id===g).name;$('#game').classList.remove('hide');document.body.classList.remove('open');
   const ext=EXT[g];$('#cv').classList.toggle('hide',!!ext);cancelAnimationFrame(G.raf);extClose(g);
-  if(ext){['#tip','#ctl','#ov','#help'].forEach(s=>$(s).classList.add('hide'));G.state='play';renderAll();ext().open();return}
-  reset();renderAll();G.last=performance.now();G.raf=requestAnimationFrame(loop)}
+  if(ext){['#tip','#ctl','#ov','#help'].forEach(s=>$(s).classList.add('hide'));G.state='play';renderAll();ext().open();checkMissions('enter',g);return}
+  reset();renderAll();G.last=performance.now();G.raf=requestAnimationFrame(loop);checkMissions('enter',g)}
 function closeGame(){$('#game').classList.add('hide');cancelAnimationFrame(G.raf);extClose()}
 window.arcadeExit=closeGame;
 window.arcadeGameOver=(sc,title,extra)=>gameOver(sc,title,extra);
@@ -616,7 +710,7 @@ function tap(){
   if(G.state==='idle'){G.state='play';G.last=performance.now();const t=$('#tip');t.classList.remove('blink');t.textContent='줄이 발밑에 올 때 터치!';setTimeout(()=>{if(G.state==='play')t.classList.add('hide')},2500);return}
   if(G.state==='play'&&G.jt<0){G.jt=0;G.jd=Math.min(.5,period()*.88)}}
 $('#stage').addEventListener('pointerdown',e=>{if(G.game!=='jump'||e.target.closest('.panel'))return;e.preventDefault();tap()});
-addEventListener('keydown',e=>{if($('#game').classList.contains('hide')||EXT[G.game])return;if(G.game==='bj'){if(G.state!=='over')bjKey(e);return}if(e.code==='Space'||e.code==='ArrowUp'){e.preventDefault();if(G.state!=='over')tap()}});
+addEventListener('keydown',e=>{if($('#game').classList.contains('hide')||EXT[G.game]||!$('#upop').classList.contains('hide'))return;if(G.game==='bj'){if(G.state!=='over')bjKey(e);return}if(e.code==='Space'||e.code==='ArrowUp'){e.preventDefault();if(G.state!=='over')tap()}});
 $('#backBtn').onclick=$('#home').onclick=()=>{G.pend=null;closeGame()};
 $('#again').onclick=()=>{G.pend=null;if(EXT[G.game]){$('#ov').classList.add('hide');G.state='play';EXT[G.game]().restart();return}reset();G.last=performance.now()};
 // 점수 정산: 내 최고 기록보다 높으면 저장. 기존 기록은 더 높을 때만 바뀌어서 랭킹이 사라지지 않음
@@ -632,7 +726,7 @@ async function gameOver(sc,title,extra){
   if(st.me)await settleScore(g,sc);
   else{G.pend={g,sc};$('#ovMsg').textContent=(g==='bj'?`남은 칩 ${sc}개 · `:'')+'아직 로그인하지 않았어요.';
     $('#qerr').textContent='';$('#qpw').value='';$('#qlog').classList.remove('hide');renderOverRank()}
-  $('#ov').classList.remove('hide')}
+  $('#ov').classList.remove('hide');checkMissions('over',g,sc)}
 // 게임오버 화면에서(또는 메뉴에서) 로그인하면, 기다리던 점수를 그 계정 기록으로 올림
 async function claimPending(){const p=G.pend;if(!p||p.busy||!st.me||!st.accounts[st.me])return;p.busy=true;
   $('#qlog').classList.add('hide');await settleScore(p.g,p.sc);G.pend=null}
@@ -644,7 +738,7 @@ $('#qlog').addEventListener('submit',async e=>{e.preventDefault();
   const err=$('#qerr'),btn=$('#qBtn'),id=$('#qid').value.trim().toLowerCase(),pw=$('#qpw').value,bad=authCheck(qMode,id,pw);
   if(bad){err.textContent=bad;return}
   btn.disabled=true;err.textContent='';
-  try{if(qMode==='signup'){const nick=$('#qnk').value.trim();if(!nick)fail('nonick');await S.signup(id,pw,{nick,photo:'',best:{},created:Date.now()})}
+  try{if(qMode==='signup'){const nick=$('#qnk').value.trim();if(!nick)fail('nonick');await S.signup(id,pw,{nick,best:{},ava:{c:DEFAULT_CHAR},unlocks:[],created:Date.now()})}
     else await S.login(id,pw);
     err.textContent='기록 올리는 중…';
     for(let i=0;i<80&&!(st.me===id&&st.accounts[id]);i++)await new Promise(r=>setTimeout(r,100));
