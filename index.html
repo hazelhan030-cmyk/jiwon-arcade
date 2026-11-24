@@ -59,7 +59,9 @@ box-shadow:0 calc(-1*var(--b)) 0 0 var(--c),0 var(--b) 0 0 var(--c),calc(-1*var(
 .lead{display:flex;justify-content:space-between;align-items:end;gap:10px;flex-wrap:wrap;margin-bottom:28px}
 .lead h2{font-size:clamp(22px,4vw,30px)}
 .lead p{margin:0;color:var(--soft);font-size:13px}
-.shelf{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,42vw),1fr));gap:26px 22px}
+.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:26px 22px}
+@media(max-width:719px){.shelf{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 14px}
+  .cab{padding:8px;gap:6px}.cab h3{font-size:16px}.cab .sub{font-size:12px}.cab.lock h3{font-size:14px}}
 .cab{display:flex;flex-direction:column;gap:10px;padding:12px;text-align:left;background:var(--p2);--c:var(--mint);--gl:#5ef2c82e;transition:transform 90ms steps(2),box-shadow 120ms}
 .cab{animation:in .45s steps(4) backwards}.cab:nth-child(2){animation-delay:.08s}.cab:nth-child(3){animation-delay:.16s}.cab:nth-child(4){animation-delay:.24s}
 @keyframes in{from{opacity:0;transform:translateY(16px)}}
@@ -68,7 +70,7 @@ box-shadow:0 calc(-1*var(--b)) 0 0 var(--c),0 var(--b) 0 0 var(--c),calc(-1*var(
 .cab:hover{--gl:#5ef2c855;transform:translateY(-4px)}
 .cab:active{transform:translateY(0)}
 .scr{aspect-ratio:4/3;background:#06060f;border:4px solid #000;display:block;width:100%;image-rendering:pixelated}
-.cab h3{font-size:20px}
+.cab h3{font-size:20px;word-break:keep-all}
 .cab .sub{display:flex;justify-content:space-between;flex-wrap:wrap;gap:2px 8px;font-size:13px;color:var(--soft)}
 .cab .go{color:var(--mint);white-space:nowrap;margin-left:auto}
 .cab.lock{--c:var(--line);--gl:transparent;background:var(--p1);cursor:default}
@@ -120,8 +122,20 @@ body.open #scrim{opacity:1;pointer-events:auto}body.open #drawer{transform:none;
 .pf .big.ch{width:96px;height:96px}
 .t5 .xs.ch{width:32px;height:32px}
 .pfava{display:block;padding:0}
-.dprev{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:14px}
-.dprev img{width:128px;height:128px;image-rendering:pixelated;background:#0d1226;--c:var(--pink);--gl:#ff7ad933;margin:8px}
+.pfbtns{display:flex;gap:8px;justify-content:center}
+/* 옷장: 게임 화면처럼 전체 화면. 고른 것은 미리보기에만, 저장을 눌러야 캐릭터에 반영 */
+#ward{position:fixed;inset:0;z-index:12;background:var(--bg);display:flex;flex-direction:column}
+.wbody{flex:1;overflow-y:auto;display:grid;grid-template-columns:minmax(0,1fr);gap:8px 32px;padding:18px max(4vw,14px) 24px;max-width:980px;width:100%;margin:0 auto;align-content:start}
+@media(min-width:720px){.wbody{grid-template-columns:300px minmax(0,1fr);align-items:start}.wprev{position:sticky;top:0}}
+.wprev{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 10px;background:var(--p1);--c:var(--pink);--gl:#ff7ad926}
+.wprev img{width:192px;height:192px;image-rendering:pixelated;background:#0d1226;--c:var(--line)}
+@media(max-width:380px){.wprev img{width:128px;height:128px}}
+.wprev .b{font-size:18px}
+.wprev .chg{font-size:12px;color:var(--pink);min-height:18px}
+.wpick .gtabs{margin-top:4px}
+.wfoot{display:flex;align-items:center;gap:10px;justify-content:flex-end;flex-wrap:wrap;padding:10px max(4vw,14px);border-top:4px solid var(--line);background:var(--p1)}
+.wfoot .err{flex:1;margin:0;min-height:0}
+.wfoot .btn{min-width:110px}
 .dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px;margin:4px 4px 18px}
 .dcell{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px 8px;background:var(--p2);--c:var(--line);font-size:13px;text-align:center}
 .dcell img{width:64px;height:64px;image-rendering:pixelated;background:#0d1226}
@@ -355,7 +369,6 @@ body.open #scrim{opacity:1;pointer-events:auto}body.open #drawer{transform:none;
   <div class="dhead">
     <div class="tabs" role="tablist">
       <button class="tab px" role="tab" data-tab="profile">프로필</button>
-      <button class="tab px" role="tab" data-tab="deco">꾸미기</button>
       <button class="tab px" role="tab" data-tab="rank">랭킹</button>
     </div>
     <button class="ibtn px" id="closeBtn" aria-label="닫기"><svg viewBox="0 0 8 8" shape-rendering="crispEdges"><path d="M1 1h1v1h1v1h2V2h1V1h1v1H6v1H5v2h1v1h1v1H6V6H5V5H3v1H2v1H1V6h1V5h1V3H2V2H1z"/></svg></button>
@@ -447,6 +460,23 @@ body.open #scrim{opacity:1;pointer-events:auto}body.open #drawer{transform:none;
       <div class="row" style="justify-content:center"><button class="btn px" id="again">다시 하기</button><button class="btn ghost px" id="home">메인으로</button></div>
     </div></div>
   </div>
+</section>
+
+<section id="ward" class="hide" aria-label="옷장">
+  <div class="gbar">
+    <button class="ibtn px" id="wBack" aria-label="옷장 나가기"><svg viewBox="0 0 8 8" shape-rendering="crispEdges"><path d="M4 1h1v1H4v1h3v2H4v1h1v1H4V6H3V5H2V3h1V2h1z"/></svg></button>
+    <h2>옷장</h2>
+  </div>
+  <div class="wbody">
+    <div class="wprev px"><img class="px" id="wImg" alt="꾸미는 중인 내 캐릭터"><span class="b" id="wNick"></span><span class="chg" id="wChg"></span></div>
+    <div class="wpick"><div class="gtabs" id="wTabs"></div><div class="dgrid" id="wGrid"></div></div>
+  </div>
+  <div class="wfoot"><span class="err" id="wErr" role="status"></span><button class="btn ghost px" id="wUndo">되돌리기</button><button class="btn alt px" id="wSave">저장</button></div>
+  <div class="ov hide" id="wAsk"><div class="panel px">
+    <h3 style="font-size:20px;color:var(--mint)">저장하지 않고 나갈까요?</h3>
+    <p>바꾼 내용은 저장해야 캐릭터에 반영돼요.</p>
+    <div class="row" style="justify-content:center"><button class="btn alt px" id="wAskSave">저장하고 나가기</button><button class="btn ghost px" id="wAskLeave">그냥 나가기</button></div>
+  </div></div>
 </section>
 
 <div id="upop" class="hide" role="dialog" aria-modal="true" aria-labelledby="upT"><div class="panel px">
@@ -588,8 +618,40 @@ function nextUnlock(){const it=upQ.shift(),pop=$('#upop');if(!it){pop.classList.
   $('#upSub').textContent=it.guest?'로그인하면 내 프로필에 저장돼요.':AVA[it.r]?'꾸미기에서 캐릭터를 바꿀 수 있어요.':'꾸미기에서 입혀 볼 수 있어요.';
   $('#upGo').classList.toggle('hide',it.guest);pop.classList.remove('hide');$('#upOk').focus()}
 $('#upOk').onclick=nextUnlock;
-$('#upGo').onclick=()=>{upQ.length=0;$('#upop').classList.add('hide');G.pend=null;closeGame();openDrawer('deco')};
-async function saveAva(p){const a=st.accounts[st.me];if(!a)return;try{await S.update(st.me,{ava:{...avaOf(a),...p}})}catch(er){const e=$('#perr');if(e)e.textContent=errText(er)}}
+$('#upGo').onclick=()=>{upQ.length=0;$('#upop').classList.add('hide');G.pend=null;closeGame();openWard()};
+/* ===== 옷장 ===== */
+const WD={draft:null,tab:'char'},WTABS=[['char','캐릭터'],...SLOTS];
+const wardOpen=()=>!$('#ward').classList.contains('hide');
+const wardSaved=()=>avaOf(st.me&&st.accounts[st.me]);
+const wardDirty=()=>!!WD.draft&&JSON.stringify(WD.draft)!==JSON.stringify(wardSaved());
+function openWard(){const a=st.me&&st.accounts[st.me];if(!a){openDrawer('profile');return}
+  WD.draft=avaOf(a);WD.tab='char';$('#wErr').textContent='';$('#wAsk').classList.add('hide');
+  document.body.classList.remove('open');$('#ward').classList.remove('hide');renderWard();$('#wBack').focus()}
+function closeWard(){$('#ward').classList.add('hide');$('#wAsk').classList.add('hide');WD.draft=null}
+function renderWard(){const a=st.me&&st.accounts[st.me];if(!a||!WD.draft)return;const v=WD.draft,o=owned(a),tab=WD.tab;
+  $('#wImg').src=avaURL(v);$('#wNick').textContent=a.nick||st.me;const dirty=wardDirty();$('#wChg').textContent=dirty?'저장하지 않은 변경이 있어요':'';
+  $('#wSave').disabled=!dirty;$('#wUndo').disabled=!dirty;
+  $('#wTabs').innerHTML=WTABS.map(([k,n])=>`<button class="px" data-wt="${k}" aria-pressed="${k===tab}">${n}</button>`).join('');
+  const prev=r=>{const w={...v};if(AVA[r])w.c=r;else w[ITEMS[r].slot]=r;return avaURL(w)};
+  const lockCell=r=>{const m=missionFor(r);return`<div class="dcell locked px"><img src="${rewardPreview(r,a,true)}" alt=""><span>???</span>${m&&m.text?`<span class="hint">${esc(m.text)}</span>`:''}</div>`};
+  let html;
+  if(tab==='char')html=CHAR_ORDER.map(k=>o.has(k)?`<button class="dcell px" data-wc="${k}" aria-pressed="${v.c===k}"><img src="${prev(k)}" alt=""><span>${esc(AVA[k].name)}</span></button>`:lockCell(k)).join('');
+  else{const its=Object.keys(ITEMS).filter(k=>ITEMS[k].slot===tab);
+    html=its.some(k=>o.has(k))?`<button class="dcell px" data-wi="" aria-pressed="${!v[tab]}"><span class="off">✕</span><span>벗기</span></button>`:'';
+    html+=its.map(k=>o.has(k)?`<button class="dcell px" data-wi="${k}" aria-pressed="${v[tab]===k}"><img src="${prev(k)}" alt=""><span>${esc(ITEMS[k].name)}</span></button>`:lockCell(k)).join('')}
+  $('#wGrid').outerHTML=html?`<div class="dgrid" id="wGrid">${html}</div>`:`<p class="empty" id="wGrid">아직 받은 아이템이 없어요.<br>미션을 깨면 여기에 생겨요!</p>`}
+async function saveWard(){if(!WD.draft||!st.me)return false;const b=$('#wSave');b.disabled=true;$('#wErr').textContent='';
+  try{await S.update(st.me,{ava:{...WD.draft}});return true}catch(er){$('#wErr').textContent=errText(er);b.disabled=false;return false}}
+function leaveWard(){if(wardDirty())$('#wAsk').classList.remove('hide');else closeWard()}
+$('#ward').addEventListener('click',async e=>{const t=e.target.closest('button');if(!t||!WD.draft)return;
+  if(t.dataset.wt){WD.tab=t.dataset.wt;renderWard();return}
+  if(t.dataset.wc){WD.draft.c=t.dataset.wc;renderWard();return}
+  if(t.dataset.wi!==undefined){WD.draft[WD.tab]=t.dataset.wi;renderWard();return}
+  if(t.id==='wUndo'){WD.draft=wardSaved();renderWard();return}
+  if(t.id==='wSave'){if(await saveWard()){t.textContent='저장 완료!';setTimeout(()=>{t.textContent='저장';closeWard()},700)}return}
+  if(t.id==='wBack'){leaveWard();return}
+  if(t.id==='wAskLeave'){closeWard();return}
+  if(t.id==='wAskSave'){if(await saveWard())closeWard();else $('#wAsk').classList.add('hide');return}});
 const ranking=g=>Object.entries(st.accounts).map(([id,a])=>({id,a,s:(a.best||{})[g]||0})).filter(x=>x.s>0).sort((x,y)=>y.s-x.s||x.id.localeCompare(y.id));
 const STATUS={loading:'불러오는 중…',slow:'서버 연결 대기 중',shared:'ONLINE',local:'이 기기에만 저장',error:'불러오기 실패'};
 function renderTop(){
@@ -614,23 +676,10 @@ function renderPane(){
     (list.length?`<ol class="list">${list.slice(0,50).map((x,i)=>`<li class="${x.id===st.me?'mine':''}"><span class="n">${i+1}</span>${avatar(x.a,x.id,'av sm')}<span>${esc(x.a.nick||x.id)}</span><span class="s">${x.s}</span></li>`).join('')}</ol>`
       :`<p class="empty">아직 기록이 없어요.<br>첫 번째 1등이 되어 보세요!</p>`);return}
   const a=st.me&&st.accounts[st.me];
-  if(st.tab==='deco'){
-    if(!(st.me&&a)){p.innerHTML=`<div class="dprev"><img class="px" src="${avaURL({c:DEFAULT_CHAR})}" alt="만두"></div><p class="empty">로그인하면 캐릭터를 꾸밀 수 있어요.<br>미션을 깨면 아이템이 생겨요!</p>
-      <button class="btn px" data-go="profile" style="width:calc(100% - 8px)">로그인하러 가기</button>`;return}
-    const v=avaOf(a),o=owned(a),slot=st.slot||'hat';
-    const lockCell=r=>{const m=missionFor(r);return`<div class="dcell locked px"><img src="${rewardPreview(r,a,true)}" alt=""><span>???</span>${m&&m.text?`<span class="hint">${esc(m.text)}</span>`:''}</div>`};
-    const chars=CHAR_ORDER.map(k=>o.has(k)?`<button class="dcell px" data-ch="${k}" aria-pressed="${v.c===k}"><img src="${rewardPreview(k,a)}" alt=""><span>${esc(AVA[k].name)}</span></button>`:lockCell(k)).join('');
-    const its=Object.keys(ITEMS).filter(k=>ITEMS[k].slot===slot),mine=its.filter(k=>o.has(k));
-    const items=(mine.length?`<button class="dcell px" data-it="" aria-pressed="${!v[slot]}"><span class="off">✕</span><span>벗기</span></button>`:'')+
-      its.map(k=>o.has(k)?`<button class="dcell px" data-it="${k}" aria-pressed="${v[slot]===k}"><img src="${rewardPreview(k,a)}" alt=""><span>${esc(ITEMS[k].name)}</span></button>`:lockCell(k)).join('');
-    p.innerHTML=`<div class="dprev"><img class="px" src="${avaURL(v)}" alt="내 캐릭터"><span class="b">${esc(a.nick)}</span></div>
-      <p class="sec">캐릭터</p><div class="dgrid">${chars}</div>
-      <div class="gtabs">${SLOTS.map(([k,n])=>`<button class="px" data-slot="${k}" aria-pressed="${k===slot}">${n}</button>`).join('')}</div>
-      ${items?`<div class="dgrid">${items}</div>`:`<p class="empty">아직 받은 아이템이 없어요.<br>미션을 깨면 여기에 생겨요!</p>`}
-      <div class="err" id="perr" role="status"></div>`;return}
   if(st.me&&a){
-    p.innerHTML=`<div class="pf"><button class="pfava" data-go="deco" title="캐릭터 꾸미기">${avatar(a,st.me,'av big px')}</button>
-      <h3>${esc(a.nick)}</h3><span class="id">@${esc(st.me)} · 캐릭터를 누르면 꾸밀 수 있어요</span></div>
+    p.innerHTML=`<div class="pf"><button class="pfava" data-ward="1" title="옷장 가기">${avatar(a,st.me,'av big px')}</button>
+      <h3>${esc(a.nick)}</h3><span class="id">@${esc(st.me)}</span>
+      <div class="pfbtns"><button class="btn alt px" data-ward="1">옷장 가기</button></div></div>
       <p class="sec">게임별 최고 점수</p>
       <ul class="list">${GAMES.map(g=>{const r=ranking(g.id).findIndex(x=>x.id===st.me);return`<li><span>${esc(g.name)}</span><span style="color:var(--soft);font-size:13px">${r>=0?(r+1)+'위':''}</span><span class="s">${best(st.me,g.id)}점</span></li>`}).join('')}</ul>
       <div class="field" style="margin-top:20px"><label for="nk">닉네임 바꾸기</label><div class="row"><input class="px" id="nk" value="${esc(a.nick)}" maxlength="12" style="flex:1"><button class="btn alt px" id="saveNick">저장</button></div></div>
@@ -647,22 +696,19 @@ function renderPane(){
 }
 function renderOverRank(){const ol=$('#ovRank');if(!ol)return;const top=ranking(G.game).slice(0,5);
   ol.innerHTML=top.length?top.map((x,i)=>`<li class="${x.id===st.me?'mine':''}"><span class="n">${i+1}</span>${avatar(x.a,x.id,'av xs')}<span class="nm">${esc(x.a.nick||x.id)}</span><span class="s">${x.s}점</span></li>`).join(''):'<li class="none">아직 기록이 없어요</li>'}
-function renderAll(){if(pendUnlocks.length)claimUnlocks();if(!$('#ov').classList.contains('hide')){renderOverRank();if(G.pend&&st.me)claimPending()}renderTop();renderShelf();renderPane();if(!$('#game').classList.contains('hide'))$('#gBest').textContent=st.me?'최고 '+best(st.me,G.game)+'점':'GUEST'}
+function renderAll(){if(pendUnlocks.length)claimUnlocks();if(wardOpen()){if(st.me&&st.accounts[st.me])renderWard();else closeWard()}if(!$('#ov').classList.contains('hide')){renderOverRank();if(G.pend&&st.me)claimPending()}renderTop();renderShelf();renderPane();if(!$('#game').classList.contains('hide'))$('#gBest').textContent=st.me?'최고 '+best(st.me,G.game)+'점':'GUEST'}
 
 /* ===== 이벤트 ===== */
 const openDrawer=t=>{if(t)st.tab=t;renderPane();document.body.classList.add('open')};
 $('#menuBtn').onclick=()=>openDrawer();$('#me').onclick=()=>openDrawer('profile');
 $('#closeBtn').onclick=$('#scrim').onclick=()=>document.body.classList.remove('open');
-addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('#upop').classList.contains('hide'))nextUnlock();else document.body.classList.remove('open')}});
+addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('#upop').classList.contains('hide'))nextUnlock();else if(wardOpen()){if(!$('#wAsk').classList.contains('hide'))$('#wAsk').classList.add('hide');else leaveWard()}else document.body.classList.remove('open')}});
 document.querySelector('.dhead').addEventListener('click',e=>{const t=e.target.closest('[data-tab]');if(t){st.tab=t.dataset.tab;renderPane()}});
 $('#shelf').addEventListener('click',e=>{const c=e.target.closest('[data-game]');if(c)openGame(c.dataset.game)});
 $('#pane').addEventListener('click',async e=>{const t=e.target.closest('button');if(!t)return;
   if(t.dataset.auth){st.auth=t.dataset.auth;renderPane();return}
   if(t.dataset.rg){st.rankGame=t.dataset.rg;renderPane();return}
-  if(t.dataset.go){st.tab=t.dataset.go;renderPane();return}
-  if(t.dataset.slot){st.slot=t.dataset.slot;renderPane();return}
-  if(t.dataset.ch){await saveAva({c:t.dataset.ch});return}
-  if(t.dataset.it!==undefined){await saveAva({[st.slot||'hat']:t.dataset.it});return}
+  if(t.dataset.ward){openWard();return}
   if(t.id==='logout'){S&&S.logout();return}
   if(t.id==='saveNick'){const v=$('#nk').value.trim();if(!v)return;t.disabled=true;try{await S.update(st.me,{nick:v})}catch(er){$('#perr').textContent=errText(er)}t.disabled=false}});
 function authCheck(mode,id,pw){if(!/^[a-z0-9_]{3,12}$/.test(id))return'아이디는 영문 소문자·숫자·_ 3~12자로 해 주세요.';
