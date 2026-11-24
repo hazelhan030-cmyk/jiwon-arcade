@@ -124,11 +124,11 @@ body.open #scrim{opacity:1;pointer-events:auto}body.open #drawer{transform:none;
 .dprev img{width:128px;height:128px;image-rendering:pixelated;background:#0d1226;--c:var(--pink);--gl:#ff7ad933;margin:8px}
 .dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px;margin:4px 4px 18px}
 .dcell{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px 8px;background:var(--p2);--c:var(--line);font-size:13px;text-align:center}
-.dcell img{width:48px;height:48px;image-rendering:pixelated;background:#0d1226}
+.dcell img{width:64px;height:64px;image-rendering:pixelated;background:#0d1226}
 .dcell[aria-pressed=true]{--c:var(--mint);--gl:#5ef2c840;color:var(--mint)}
 .dcell.locked{cursor:default;color:var(--soft)}
 .dcell .hint{font-size:11px;line-height:1.35;color:var(--soft)}
-.dcell .off{width:48px;height:48px;display:grid;place-items:center;background:#0d1226;color:var(--soft);font-size:20px}
+.dcell .off{width:64px;height:64px;display:grid;place-items:center;background:#0d1226;color:var(--soft);font-size:20px}
 #upop{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:#0b0b1ad9}
 #upop h3{font-size:24px;color:var(--mint);text-shadow:3px 3px 0 #0d4a3c}
 #upop img{width:128px;height:128px;image-rendering:pixelated;background:#0d1226;--c:var(--pink);--gl:#ff7ad940;margin:18px auto 8px;display:block}
@@ -532,30 +532,35 @@ const errText=e=>({exists:'이미 있는 아이디예요.',badlogin:'아이디 �
 /* ===== 화면 ===== */
 const best=(id,g)=>((st.accounts[id]||{}).best||{})[g]||0;
 /* ===== 캐릭터(아바타) =====
-   캐릭터와 아이템은 모두 16×16 픽셀 그림. 두 캐릭터는 눈 높이·머리 꼭대기가 같아서 아이템이 공용으로 맞음.
+   캐릭터와 아이템은 모두 32×32 픽셀 그림. 두 캐릭터는 눈 높이·머리 꼭대기가 같아서 아이템이 공용으로 맞음.
    저장: accounts/{아이디}.ava = {c:캐릭터, hat, face, hand, body}, .unlocks = [받은 것들] (점수 best와 따로라 랭킹에 영향 없음)
    미션(해금 조건) 목록은 missions.js 파일에 있음 */
 const AVA={
  mandu:{name:'만두',pal:{o:'#4a3a2a',b:'#f3ead8',s:'#d3c2a0',h:'#ffffff'},
-  map:["................","................",".......oo.......","......ohho......","....oobhhboo....","...obbsbbsbbo...","..obbbbbbbbbbo..",".obbwebbbbwebbo.",".obbeebbbbeebbo.",".obppbmbbmbppbo.",".obbbbbmmbbbbbo.",".obbbbbbbbbbbbo.",".osbbbbbbbbbbso.","..osssssssssso..","...oooooooooo...","................"]},
+  map:["................................","................................","................................","................................","...............oo...............","..............obho..............",".............obhbbo.............","...........oobbssbboo...........","........ooobbbsbssbbbooo........",".......obbbbbssbbssbbbbbo.......",".....oobbbbbsbsbbbssbbbbboo.....","....obbbbbbsbsbbbbsbsbbbbbbo....","...obbbbbbsbbbbbbbbbbsbbbbbbo...","...obhhhbbbbbbbbbbbbbbbbbbbbo...","..obbhhhbbbbbbbbbbbbbbbbbbbbbo..","..obbhhhbbbbbbbbbbbbbbbbbbbbbo..",".obbbbbbbbbbbbbbbbbbbbbbbbbbbbo.",".obbbbbbbbbbbbbbbbbbbbbbbbbbbso.",".obbbbbbbbbbbbbbbbbbbbbbbbbbbso.",".obbbbbbbbbbbbbbbbbbbbbbbbbbsso.",".obbbbbbbbbbbbbbbbbbbbbbbbbbsso.","..obbbbbbbbbbbbbbbbbbbbbbbbbso..","..obbbbbbbbbbbbbbbbbbbbbbbbsso..","...obbbbbbbbbbbbbbbbbbbbbbsso...","...osbbbbbbbbbbbbbbbbbbbbssso...","....osbbbbbbbbbbbbbbbbbbssso....",".....oosbbbbbbbbbbbbbbsssoo.....",".......oossssssssssssssoo.......",".........oooooooooooooo.........","................................","................................","................................"]},
  potato:{name:'감자',pal:{o:'#3a2416',b:'#c8955a',s:'#9a6a3a',h:'#e6bb84',d:'#7e5230'},
-  map:["................","................",".....oooooo.....","...oobbbbbboo...","..obhhbbbbbbbo..","..obhbbbbbdbbso.",".obbbbbbbbbbbso.",".obbwebbbbwebso.",".obbeebbbbeebso.",".obppbmbbmbppso.",".obbbbbmmbbbbso.",".obbdbbbbbbbbso.","..obbbbbbbbbso..","..osbbbbbbbsso..","...oossssssoo...","................"]}};
+  map:["................................","................................","................................","................................","................................",".............ooooooo............","..........ooobbbbbbboo..........","........oobbbbbbbbbbbbo.........","......oohhhhbbbbbbbbbbboo.......",".....obhhhhhhbbbbbbbbbbbbo......","....obbhhhhhhbbbbbbbbbbsdbo.....","....obbbhhhhbbbbbbbbbbbbbdbo....","...obbbbbbbbbbbbbbbbbbbbbbbso...","...obbbbbbbbbbbbbbbbbbbbbbbbo...","...obbbbbbbbbbbbbbbbbbbbbbbbso..","..obbbbbbbbbbbbbbbbbbbbbbbbbso..","..obbbbbbbbbbbbbbbbbbbbbbbbbsso.","..obbbbbbbbbbbbbbbbbbbbbbbbbsso.","..obbbbbbbbbbbbbbbbbbbbbbbbbsso.","..obbbbbbbbbbbbbbbbbbbbbbbbssso.","..obbbbbbbbbbbbbbbbbbbbbbbbdso..","...obbbbbbbbbbbbbbbbbbbbbbbsso..","...obbbbbbbbbbbbbbbbbbbbbbsso...","...ossdbbbbbbbbbbbbbbbbbbssso...","....osbbbbbbbbbbbbbbbbbbssso....","....ossbbbbbbbbbbbbbbbsssso.....",".....oossbbbbbbbbbbbssdsoo......",".......oossssbbbbsssssoo........",".........ooooooooooooo..........","................................","................................","................................"]}};
+// 공용 얼굴(모든 캐릭터가 같은 자리): normal 평소 / happy 점프 / dizzy 실패·기절
+const FACES={normal:["................................","................................","................................","................................","................................","................................","................................","................................","................................","................................","................................","................................","................................","................................","................................","................................",".........wee........wee.........",".........wee........wee.........",".........eee........eee.........","..........ee.........ee.........","................................","......ppp.....m..m......ppp.....","......ppp......mm.......ppp.....","................................","................................","................................","................................","................................","................................","................................","................................","................................"],happy:["................................","................................","................................","................................","................................","................................","................................","................................","................................","................................","................................","................................","................................","................................","................................","................................","................................","..........e..........e..........",".........e.e........e.e.........","................................","................................","......ppp.....m..m......ppp.....","......ppp......mm.......ppp.....","................................","................................","................................","................................","................................","................................","................................","................................","................................"],dizzy:["................................","................................","................................","................................","................................","................................","................................","................................","................................","................................","................................","................................","................................","................................","................................","................................",".........e.e........e.e.........","..........e..........e..........",".........e.e........e.e.........","................................","................................","......ppp......mm.......ppp.....","......ppp.....mmmm......ppp.....","................................","................................","................................","................................","................................","................................","................................","................................","................................"]};
 const FACEPAL={e:'#1a1a2e',w:'#ffffff',p:'#ff8fb0',m:'#6a2a3a'};
 const CHAR_ORDER=['mandu','potato'],DEFAULT_CHAR='mandu';
 const SLOTS=[['hat','모자'],['face','얼굴'],['hand','손'],['body','옷']];
-// 꾸미기 아이템: id:{name, slot:'hat'|'face'|'hand'|'body', map:[16줄], pal:{글자:색}} — 미션 목록이 정해지면 그림을 여기에 추가
+// 꾸미기 아이템: id:{name, slot:'hat'|'face'|'hand'|'body', map:[32줄×32칸], pal:{글자:색}} — 미션 목록이 정해지면 그림을 여기에 추가
 const ITEMS={};
 const MISSIONS=(Array.isArray(window.ARCADE_MISSIONS)?window.ARCADE_MISSIONS:[]).filter(m=>m&&m.reward&&(AVA[m.reward]||ITEMS[m.reward]));
 const owned=a=>new Set([DEFAULT_CHAR,...((a&&a.unlocks)||[])]);
 function avaOf(a){const v=(a&&a.ava)||{},o=owned(a),r={c:AVA[v.c]&&o.has(v.c)?v.c:DEFAULT_CHAR};
   SLOTS.forEach(([k])=>{const it=ITEMS[v[k]];r[k]=it&&it.slot===k&&o.has(v[k])?v[k]:''});return r}
 function paintMap(c,map,pal,one){map.forEach((row,y)=>{if(!row)return;for(let x=0;x<row.length;x++){const col=pal[row[x]];if(col){c.fillStyle=one||col;c.fillRect(x,y,1,1)}}})}
-const AVC={};
-function avaURL(v,sil){const key=(sil?'#':'')+[v.c,...SLOTS.map(([k])=>v[k]||'')].join('|');if(AVC[key])return AVC[key];
-  const cv=document.createElement('canvas');cv.width=cv.height=16;const c=cv.getContext('2d'),ch=AVA[v.c]||AVA[DEFAULT_CHAR];
-  paintMap(c,ch.map,{...ch.pal,...FACEPAL},sil&&'#2e2b5c');
+const AVC={},AVK={};
+function avaCanvas(v,ex,sil){const key=(sil?'#':'')+(ex||'normal')+'|'+[v.c,...SLOTS.map(([k])=>v[k]||'')].join('|');if(AVK[key])return AVK[key];
+  const cv=document.createElement('canvas');cv.width=cv.height=32;const c=cv.getContext('2d'),ch=AVA[v.c]||AVA[DEFAULT_CHAR];
+  paintMap(c,ch.map,ch.pal,sil&&'#2e2b5c');if(!sil)paintMap(c,FACES[ex]||FACES.normal,FACEPAL);
   ['body','face','hat','hand'].forEach(k=>{const it=ITEMS[v[k]];if(it)paintMap(c,it.map,it.pal,sil&&'#3b3770')});
-  return AVC[key]=cv.toDataURL()}
+  return AVK[key]=cv}
+function avaURL(v,sil){const key=(sil?'#':'')+[v.c,...SLOTS.map(([k])=>v[k]||'')].join('|');return AVC[key]||(AVC[key]=avaCanvas(v,'normal',sil).toDataURL())}
+// 게임 속 조작 캐릭터(줄넘기·몬스터 팡팡)용: 지금 로그인한 사람의 캐릭터, 로그인 전이면 만두
+window.arcadeAvatar=ex=>avaCanvas(avaOf(st.me&&st.accounts[st.me]),ex);
 const avatar=(a,id,cls='av')=>`<img class="${cls} ch" src="${avaURL(avaOf(a))}" alt="">`;
 const josa=w=>{const k=(w||'').charCodeAt(w.length-1)-0xAC00;return k>=0&&k<11172&&k%28?'을':'를'};
 const rewardName=r=>(AVA[r]||ITEMS[r]||{}).name||r;
@@ -691,7 +696,7 @@ const SKY=[[0,'#7fb8e6','#d9eef8'],[22,'#c98a8a','#f2c9a8'],[42,'#4d4a78','#8e82
 function skyAt(t){for(let i=SKY.length-1;i>=0;i--)if(t>=SKY[i][0]){const a=SKY[i],b=SKY[i+1]||a,k=b===a?0:(t-a[0])/(b[0]-a[0]);return[mix(a[1],b[1],k),mix(a[2],b[2],k)]}return[SKY[0][1],SKY[0][2]]}
 let K=4,VW=100,VH=160;
 function fit(){const r=cv.getBoundingClientRect(),d=devicePixelRatio||1;cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d);
-  K=Math.max(2,Math.floor(cv.height/160));VW=Math.ceil(cv.width/K);VH=Math.ceil(cv.height/K);off.width=VW;off.height=VH}
+  K=Math.max(2,Math.floor(cv.height/320)*2);VW=Math.ceil(cv.width/K);VH=Math.ceil(cv.height/K);off.width=VW*2;off.height=VH*2}
 new ResizeObserver(fit).observe(cv);
 // 따로 화면을 가진 게임들 (타코야끼·몬스터 팡팡)
 const EXT={tako:()=>window.Tako,mon:()=>window.Mon};
@@ -757,7 +762,7 @@ function loop(ts){
   G.pops.forEach(p=>p.a-=dt*1.6);G.pops=G.pops.filter(p=>p.a>0);
   draw();G.raf=requestAnimationFrame(loop)}
 function draw(){
-  const W=VW,H=VH;if(!W||!H)return;const c=o;
+  const W=VW,H=VH;if(!W||!H)return;const c=o;c.setTransform(2,0,0,2,0,0);c.imageSmoothingEnabled=false; // 캐릭터를 2배 촘촘하게 그리려고 반 칸 단위 캔버스 사용
   const t=G.t,dt=G.state==='over'?0:G.dt,live=G.state==='play',R=Math.round;
   const gy=R(H*.78),cx=R(W/2);
   const dusk=cl(t/42),night=cl((t-42)/30),cloudy=cl((t-14)/30),rain=cl((t-38)/18),storm=cl((t-62)/10),fogA=cl((t-50)/20);
@@ -791,7 +796,7 @@ function draw(){
   c.fillStyle=ink;if(!front&&G.state!=='fail')rope(c,lx,hy,rx,cy,1);
   const h=R(jh()*22);c.fillStyle='rgba(0,0,0,.25)';const sw=10-R(jh()*4);c.fillRect(cx-sw/2,gy+1,sw,2);
   [[lx-14,false],[rx+2,true]].forEach(([x,fl])=>{spr(c,'stand',x,gy-16,'#111','#f4f4f4',fl);c.fillStyle=ink;pline(c,fl?x:x+11,gy-8,fl?rx:lx,hy)});
-  spr(c,G.state==='fail'?'fail':h>0?'jump':'stand',cx-6,gy-16-h,'#111','#f4f4f4');
+  c.drawImage(window.arcadeAvatar(G.state==='fail'||G.state==='over'?'dizzy':h>0?'happy':'normal'),cx-8,gy-15-h,16,16); // 내 캐릭터
   c.fillStyle=ink;if(front||G.state==='fail')rope(c,lx,hy,rx,cy,2);
   // 방해 요소
   E.birds.filter(b=>b.close).forEach(drawBird);
@@ -1469,10 +1474,11 @@ function draw(){
     c.globalAlpha = 1;
   }
   // 마법사
-  const wx = laneX(wizLane) - 6 * P, wy = YL + 4 * P;
-  c.drawImage(stun > 0 ? WIZ_DIZZY : WIZ, wx, wy, 12 * P, 14 * P);
+  const AV = window.arcadeAvatar && window.arcadeAvatar(stun > 0 ? 'dizzy' : 'normal'), wx = laneX(wizLane) - (AV ? 8 : 6) * P, wy = YL + (AV ? 2 : 4) * P;
+  c.imageSmoothingEnabled = false;
+  if (AV) c.drawImage(AV, wx, wy, 16 * P, 16 * P); else c.drawImage(stun > 0 ? WIZ_DIZZY : WIZ, wx, wy, 12 * P, 14 * P);
   if (stun > 0) for (let i = 0; i < 3; i++){ const a = T * 9 + i * 2.1; c.fillStyle = i ? '#ff7ad9' : '#8fd0ff';
-    c.fillRect(Math.round(wx + 6 * P + Math.cos(a) * 6 * P - P), Math.round(wy - P + Math.sin(a) * 2 * P), 2 * P, 2 * P); }
+    c.fillRect(Math.round(wx + (AV ? 8 : 6) * P + Math.cos(a) * 6 * P - P), Math.round(wy - P + Math.sin(a) * 2 * P), 2 * P, 2 * P); }
   // 파편
   for (const p of parts){ c.globalAlpha = 1 - p.t / p.life; c.fillStyle = p.col; c.fillRect(Math.round(p.x / P) * P, Math.round(p.y / P) * P, p.s, p.s); }
   c.globalAlpha = 1;
